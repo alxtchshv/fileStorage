@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s      # опрашивать /metrics каждые 15 секунд
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "managerfiles"
+    static_configs:
+      - targets: ["app:8080"]  # наш сервис внутри Docker сети
+    metrics_path: /metrics
