@@ -41,8 +41,9 @@ type Config struct {
 	MinioUseSSL    bool
 
 	// --- Kafka ---
-	KafkaBrokers []string // список брокеров: ["kafka:9092", "kafka2:9093"]
-	KafkaGroupID string   // consumer group ID (уникальный для каждого сервиса)
+	KafkaBrokers   []string // список брокеров: ["kafka:9092", "kafka2:9093"]
+	KafkaGroupID   string   // consumer group ID (уникальный для каждого сервиса)
+	KafkaEnabled   bool     // false — не запускать consumers (удобно для локальной разработки)
 
 	// --- JWT ---
 	JWTSecret     string
@@ -90,6 +91,7 @@ func Load() *Config {
 
 		KafkaBrokers: []string{getEnv("KAFKA_BROKERS", "localhost:9092")},
 		KafkaGroupID: getEnv("KAFKA_GROUP_ID", "managerfiles-group"),
+		KafkaEnabled: getEnvBool("KAFKA_ENABLED", true),
 
 		JWTSecret:     mustGetEnv("JWT_SECRET"),
 		JWTAccessTTL:  getEnvDuration("JWT_ACCESS_TTL", 15*time.Minute),

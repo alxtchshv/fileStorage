@@ -104,10 +104,15 @@ func main() {
 	dirSvc := service.NewDirectoryService(dirRepo, fileRepo)
 
 	// --- 12. Kafka Consumers ---
-	// Каждый consumer читает из своего топика в отдельной горутине.
-	// sync.WaitGroup нужен для graceful shutdown — ждём завершения всех горутин.
+	// Запускаются только если KAFKA_ENABLED=true (по умолчанию true).
+	// Для локальной разработки без Kafka: добавь KAFKA_ENABLED=false в .env
 	var wg sync.WaitGroup
-	consumers := kafka.StartConsumers(ctx, cfg, &wg)
+	var consumers []*kafka.Consumer
+	if cfg.KafkaEnabled {
+		consumers = kafka.StartConsumers(ctx, cfg, &wg)
+	} else {
+		slog.Warn("Kafka отключена (KAFKA_ENABLED=false), consumers не запущены")
+	}
 	defer func() {
 		for _, c := range consumers {
 			c.Close()
