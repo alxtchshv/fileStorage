@@ -1,23 +1,34 @@
 package encrypt
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/hex"
 	"io"
+	"log"
+	"strings"
 )
 
 // AES реализует AES-256-GCM потоковое шифрование для файлов.
-// Почему GCM? Это аутентифицированное шифрование — защищает от модификации зашифрованных данных.
-// Почему потоковое? Файлы могут быть большими (до 100MB), нельзя загружать весь файл в память.
+// GCM — аутентифицированное шифрование: защищает и от чтения, и от подделки данных.
+// Потоковое: файлы до 100MB обрабатываются чанками, не загружая весь файл в память.
 type AES struct {
 	key []byte // 32 байта = 256 бит
 }
 
-// NewAES создаёт шифратор. Ключ должен быть ровно 32 байта.
-// Если ключ задан как hex-строка в конфиге — декодировать через hex.DecodeString.
+// NewAES создаёт шифратор из hex-строки ключа (64 символа = 32 байта).
+// Генерация ключа: openssl rand -hex 32
 func NewAES(key string) *AES {
-	// 1. Декодировать key из hex строки в []byte
-	// 2. Проверить что длина ключа == 32 байта (panic при нарушении — это конфиг ошибка)
-	// 3. Вернуть &AES{key: keyBytes}
-	return &AES{key: []byte(key)} // упрощённая заглушка
+	key = strings.TrimSpace(key)
+	decoded, err := hex.DecodeString(key)
+	if err != nil {
+		log.Fatalf("ENCRYPTION_KEY: неверный hex формат (ожидается 64 hex символа): %v", err)
+	}
+	if len(decoded) != 32 {
+		log.Fatalf("ENCRYPTION_KEY: ожидается 32 байта (64 hex символа), получено %d байт", len(decoded))
+	}
+	return &AES{key: decoded}
 }
 
 // EncryptStream читает plaintext из src, шифрует и пишет в dst.
@@ -25,34 +36,128 @@ func NewAES(key string) *AES {
 // Формат: [12 байт nonce][зашифрованные данные][16 байт authentication tag]
 // Nonce генерируется случайно при каждом шифровании (crypto/rand).
 func (a *AES) EncryptStream(dst io.Writer, src io.Reader) error {
-	// 1. Сгенерировать nonce: make([]byte, 12); io.ReadFull(rand.Reader, nonce)
-	// 2. Записать nonce в dst первым (нужен при расшифровке)
-	// 3. Создать aes.NewCipher(a.key) -> cipher.NewGCM(block)
-	// 4. Читать src кусками (чанками по 32KB чтобы не загружать весь файл в память)
-	// 5. Шифровать каждый чанк: gcm.Seal(nil, nonce, chunk, nil)
-	//    Внимание: для потокового GCM нужно использовать counter в nonce для каждого чанка
-	//    или использовать специализированную библиотеку (golang.org/x/crypto/chacha20poly1305)
-	// 6. Записывать зашифрованный чанк в dst
+
+	nonce := make([]byte, 12)
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return err
+	}
+
+	// 1. Записать nonce в dst первым (нужен при расшифровке)
+	if _, err := dst.Write(nonce); err != nil {
+		return err
+	}
+
+	cipherBlock, err := aes.NewCipher(a.key)
+	if err != nil {
+		return err
+	}
+
+	// 2. Создать GCM режим
+	gcm, err := cipher.NewGCM(cipherBlock)
+	if err != nil {
+		return err
+	}
+
+	// 3. Читать src кусками (чанками по 32KB чтобы не загружать весь файл в память)
+	buf := make([]byte, 32*1024) // 32KB
+	counter := uint64(0)         // для генерации уникального nonce для каждого чанка
+
+	for {
+		n, err := src.Read(buf)
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		if n == 0 {
+			break
+		}
+
+		chunk := buf[:n]
+
+		// 4. Шифровать каждый чанк: gcm.Seal(nil, nonce, chunk, nil)
+		//    Для потокового GCM нужно использовать counter в nonce для каждого чанка
+		chunkNonce := make([]byte, 12)
+		copy(chunkNonce, nonce)
+		for i := 0; i < 8; i++ {
+			chunkNonce[11-i] = byte((counter >> (8 * i)) & 0xff)
+		}
+		counter++
+
+		ciphertext := gcm.Seal(nil, chunkNonce, chunk, nil)
+
+		// 5. Записывать зашифрованный чанк в dst
+		if _, err := dst.Write(ciphertext); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // DecryptStream читает шифротекст из src, расшифровывает и пишет в dst.
 // Используется при скачивании: MinIO -> decrypt -> HTTP response body.
 func (a *AES) DecryptStream(dst io.Writer, src io.Reader) error {
-	// 1. Прочитать первые 12 байт — это nonce
-	// 2. Создать cipher аналогично EncryptStream
-	// 3. Читать src кусками (chunk + 16 байт тег)
-	// 4. Расшифровывать: gcm.Open(nil, nonce, encryptedChunk, nil)
-	//    Если authentication tag невалидный — вернуть ошибку (данные повреждены/подделаны)
-	// 5. Писать расшифрованные данные в dst
+
+	nonce := make([]byte, 12)
+	if _, err := io.ReadFull(src, nonce); err != nil {
+		return err
+	}
+
+	cipherBlock, err := aes.NewCipher(a.key)
+	if err != nil {
+		return err
+	}
+
+	gcm, err := cipher.NewGCM(cipherBlock)
+	if err != nil {
+		return err
+	}
+
+	buf := make([]byte, 32*1024+16) // 32KB + 16 байт для authentication tag
+
+	for {
+		n, err := src.Read(buf)
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		if n == 0 {
+			break
+		}
+
+		ciphertext := buf[:n]
+
+		// 6. Расшифровывать: gcm.Open(nil, nonce, ciphertext, nil)
+		chunkNonce := make([]byte, 12)
+		copy(chunkNonce, nonce)
+
+		chunkCounter := uint64(0) // для генерации того же nonce, что и при шифровании
+		for i := 0; i < 8; i++ {
+			chunkNonce[11-i] = byte((chunkCounter >> (8 * i)) & 0xff)
+		}
+		chunkCounter++
+
+		plaintext, err := gcm.Open(nil, chunkNonce, ciphertext, nil)
+		if err != nil {
+			return err // данные повреждены или подделаны
+		}
+
+		if _, err := dst.Write(plaintext); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // GenerateKey генерирует случайный 32-байтный ключ.
 // Используй при первоначальной настройке: ./server generate-key
 func GenerateKey() (string, error) {
-	// 1. key := make([]byte, 32)
-	// 2. io.ReadFull(rand.Reader, key)
-	// 3. Вернуть hex.EncodeToString(key)
-	return "", nil
+
+	key := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, key); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(key), nil
 }
