@@ -7,48 +7,47 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: monospace; background: #1a1a1a; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
 #auth { display: flex; align-items: center; justify-content: center; flex: 1; }
-#app { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+#app  { display: none; flex-direction: column; flex: 1; overflow: hidden; }
 .card { background: #2a2a2a; border: 1px solid #444; padding: 2rem; width: 340px; }
 input { display: block; width: 100%; margin-bottom: 0.8rem; padding: 0.5rem; background: #1a1a1a; border: 1px solid #555; color: #e0e0e0; font-family: monospace; }
 input:focus { outline: none; border-color: #888; }
 .btn { padding: 0.5rem 1rem; background: #333; border: 1px solid #666; color: #e0e0e0; cursor: pointer; font-family: monospace; }
 .btn:hover { background: #444; }
-.btn-sm { padding: 0.2rem 0.55rem; font-size: 0.82rem; }
-.btn-danger { border-color: #700; color: #f88; }
-.btn-danger:hover { background: #300; }
+.btn-sm  { padding: 0.2rem 0.55rem; font-size: 0.82rem; }
+.btn-danger  { border-color: #700; color: #f88; }
+.btn-danger:hover  { background: #300; }
 .btn-primary { border-color: #468; color: #8af; }
 .btn-primary:hover { background: #234; }
 .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-.tab { cursor: pointer; padding: 0.4rem 1rem; border: 1px solid #444; color: #aaa; }
+.tab  { cursor: pointer; padding: 0.4rem 1rem; border: 1px solid #444; color: #aaa; }
 .tab.active { border-color: #888; color: #fff; background: #333; }
-.err { color: #f88; font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2rem; }
-.ok  { color: #8f8; font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2rem; }
+.msg { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2rem; }
+.msg.err { color: #f88; }
+.msg.ok  { color: #8f8; }
 /* layout */
 #topbar { background: #2a2a2a; border-bottom: 1px solid #444; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.8rem; }
 #topbar .title { font-weight: bold; margin-right: auto; }
-#topbar .user { color: #888; font-size: 0.82rem; }
-#main { display: flex; flex: 1; overflow: hidden; }
+#topbar .user  { color: #888; font-size: 0.82rem; }
+#main    { display: flex; flex: 1; overflow: hidden; }
 #sidebar { width: 220px; border-right: 1px solid #444; display: flex; flex-direction: column; }
 #sidebar-actions { padding: 0.5rem; display: flex; gap: 0.4rem; border-bottom: 1px solid #333; }
 #dir-list { flex: 1; overflow-y: auto; padding: 0.3rem; }
-#content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+#content  { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 #breadcrumb { padding: 0.5rem 1rem; background: #222; border-bottom: 1px solid #333; font-size: 0.85rem; color: #888; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-#breadcrumb span { cursor: pointer; color: #8af; }
-#breadcrumb span:hover { text-decoration: underline; }
 #content-actions { padding: 0.5rem 1rem; display: flex; gap: 0.5rem; align-items: center; border-bottom: 1px solid #333; }
 #file-list { flex: 1; overflow-y: auto; padding: 0.5rem 1rem; }
-#upload-bar { padding: 0.5rem 1rem; background: #222; border-top: 1px solid #333; display: flex; gap: 0.5rem; align-items: center; }
-#upload-bar input[type=file] { flex: 1; border: 1px dashed #555; padding: 0.3rem; color: #aaa; }
 .dir-item { padding: 0.3rem 0.4rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; border-radius: 2px; font-size: 0.88rem; white-space: nowrap; }
-.dir-item:hover { background: #2e2e2e; }
+.dir-item:hover  { background: #2e2e2e; }
 .dir-item.active { background: #333; }
-.dir-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.dir-item .name  { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 .row { display: flex; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid #2a2a2a; gap: 0.4rem; }
 .row:hover { background: #1e1e1e; }
 .row .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .meta { color: #666; font-size: 0.8rem; min-width: 60px; text-align: right; }
 .badge { font-size: 0.7rem; padding: 0.1rem 0.3rem; border: 1px solid #555; color: #888; }
 .empty { color: #555; padding: 1rem 0; font-size: 0.9rem; }
+.bc-link { cursor: pointer; color: #8af; }
+.bc-link:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -57,21 +56,21 @@ input:focus { outline: none; border-color: #888; }
 <div id="auth">
   <div class="card">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('login')">Войти</div>
-      <div class="tab" onclick="switchTab('register')">Регистрация</div>
+      <div class="tab active" id="tab-btn-login"    onclick="switchTab('login')">Войти</div>
+      <div class="tab"        id="tab-btn-register" onclick="switchTab('register')">Регистрация</div>
     </div>
     <div id="tab-login">
-      <input id="l-email" placeholder="Email" type="email" onkeydown="if(event.key==='Enter')login()">
+      <input id="l-email" placeholder="Email"  type="email"    onkeydown="if(event.key==='Enter')login()">
       <input id="l-pass"  placeholder="Пароль" type="password" onkeydown="if(event.key==='Enter')login()">
       <button class="btn" style="width:100%" onclick="login()">Войти</button>
     </div>
     <div id="tab-register" style="display:none">
-      <input id="r-name" placeholder="Имя пользователя">
-      <input id="r-email" placeholder="Email" type="email">
-      <input id="r-pass" placeholder="Пароль (мин. 8 символов)" type="password">
+      <input id="r-name"  placeholder="Имя пользователя">
+      <input id="r-email" placeholder="Email"  type="email">
+      <input id="r-pass"  placeholder="Пароль (мин. 8 символов)" type="password">
       <button class="btn" style="width:100%" onclick="register()">Зарегистрироваться</button>
     </div>
-    <div id="auth-msg" class="err"></div>
+    <div id="auth-msg" class="msg"></div>
   </div>
 </div>
 
@@ -82,9 +81,7 @@ input:focus { outline: none; border-color: #888; }
     <span class="user" id="user-label"></span>
     <button class="btn btn-sm" onclick="logout()">Выйти</button>
   </div>
-
   <div id="main">
-    <!-- Sidebar: root dirs -->
     <div id="sidebar">
       <div id="sidebar-actions">
         <button class="btn btn-sm" title="Создать корневую папку" onclick="createRootDir()">+ Папка</button>
@@ -92,10 +89,8 @@ input:focus { outline: none; border-color: #888; }
       </div>
       <div id="dir-list"></div>
     </div>
-
-    <!-- Content: current dir -->
     <div id="content">
-      <div id="breadcrumb"><span style="color:#555">Выберите папку</span></div>
+      <div id="breadcrumb"></div>
       <div id="content-actions" style="display:none">
         <button class="btn btn-sm btn-primary" onclick="createSubDir()">+ Подпапка</button>
         <span style="flex:1"></span>
@@ -110,23 +105,27 @@ input:focus { outline: none; border-color: #888; }
 </div>
 
 <script>
-let token = localStorage.getItem('token') || '';
-// Stack of { id, name } — текущий путь в дереве директорий
+// sessionStorage изолирован по вкладке — разные вкладки не перезаписывают токены друг друга.
+// (localStorage общий для всего сайта: вход на вкладке 2 перезаписал бы токен вкладки 1)
+let token = sessionStorage.getItem('token') || '';
+
+// Стек пути: [{id, name}, ...] — текущий открытый путь
 let dirStack = [];
 
-// ── Auth ──────────────────────────────────────────────────────────────────
+// ── Auth ─────────────────────────────────────────────────────────────────────
 
 function switchTab(t) {
   document.getElementById('tab-login').style.display    = t === 'login'    ? '' : 'none';
   document.getElementById('tab-register').style.display = t === 'register' ? '' : 'none';
-  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', i === (t==='login'?0:1)));
-  setMsg('', false);
+  document.getElementById('tab-btn-login').classList.toggle('active',    t === 'login');
+  document.getElementById('tab-btn-register').classList.toggle('active', t === 'register');
+  setMsg('');
 }
 
-function setMsg(text, isErr=true) {
+function setMsg(text, isErr = true) {
   const el = document.getElementById('auth-msg');
   el.textContent = text;
-  el.className = isErr ? 'err' : 'ok';
+  el.className = 'msg ' + (isErr ? 'err' : 'ok');
 }
 
 async function login() {
@@ -136,10 +135,10 @@ async function login() {
       password: document.getElementById('l-pass').value,
     });
     token = r.access_token;
-    localStorage.setItem('token', token);
-    localStorage.setItem('email', document.getElementById('l-email').value);
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('email', document.getElementById('l-email').value);
     showApp();
-  } catch(e) { setMsg(e); }
+  } catch (e) { setMsg(e); }
 }
 
 async function register() {
@@ -152,55 +151,80 @@ async function register() {
     document.getElementById('l-email').value = document.getElementById('r-email').value;
     switchTab('login');
     setMsg('Зарегистрирован! Теперь войдите.', false);
-  } catch(e) { setMsg(e); }
+  } catch (e) { setMsg(e); }
 }
 
 async function logout() {
-  try { await api('POST', '/api/auth/logout'); } catch(_){}
+  try { await api('POST', '/api/auth/logout'); } catch (_) {}
   token = '';
-  localStorage.removeItem('token');
+  sessionStorage.clear();
   document.getElementById('app').style.display  = 'none';
   document.getElementById('auth').style.display = 'flex';
+  dirStack = [];
 }
 
-// ── App init ──────────────────────────────────────────────────────────────
+// ── App ───────────────────────────────────────────────────────────────────────
 
 function showApp() {
   document.getElementById('auth').style.display = 'none';
   document.getElementById('app').style.display  = 'flex';
-  document.getElementById('user-label').textContent = localStorage.getItem('email') || '';
+  document.getElementById('user-label').textContent = sessionStorage.getItem('email') || '';
+  clearContent();
   refreshDirs();
 }
 
-// ── Directories ───────────────────────────────────────────────────────────
+// ── Directories ───────────────────────────────────────────────────────────────
 
 async function refreshDirs() {
   try {
     const dirs = await api('GET', '/api/dirs');
     renderSidebar(dirs || []);
-  } catch(e) { console.error('refreshDirs:', e); }
+  } catch (e) { console.error('refreshDirs:', e); }
 }
 
 function renderSidebar(dirs) {
   const el = document.getElementById('dir-list');
   el.innerHTML = '';
+
   if (!dirs.length) {
-    el.innerHTML = '<div style="color:#555;padding:0.5rem;font-size:0.82rem">Нет папок. Создай первую.</div>';
+    const msg = document.createElement('div');
+    msg.style.cssText = 'color:#555;padding:0.5rem;font-size:0.82rem';
+    msg.textContent = 'Нет папок. Создай первую.';
+    el.appendChild(msg);
     return;
   }
-  const curId = dirStack.length ? dirStack[0].id : null;
+
+  const curRootId = dirStack.length ? dirStack[0].id : null;
   dirs.forEach(d => {
     const item = document.createElement('div');
-    item.className = 'dir-item' + (d.id === curId ? ' active' : '');
-    item.innerHTML = `<span>📁</span><span class="name" title="${esc(d.name)}">${esc(d.name)}</span>
-      <button class="btn btn-sm btn-danger" title="Удалить" onclick="event.stopPropagation();deleteDir('${d.id}')">✕</button>`;
+    item.className = 'dir-item' + (d.id === curRootId ? ' active' : '');
+
+    const icon = document.createElement('span');
+    icon.textContent = '📁';
+
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = d.name;
+    name.title = d.name;
+
+    const del = document.createElement('button');
+    del.className = 'btn btn-sm btn-danger';
+    del.title = 'Удалить';
+    del.textContent = '✕';
+    del.onclick = e => { e.stopPropagation(); deleteDir(d.id); };
+
+    item.appendChild(icon);
+    item.appendChild(name);
+    item.appendChild(del);
+    // Клик по всему item (кроме кнопки удаления) открывает папку
     item.onclick = () => openDir(d, true);
+
     el.appendChild(item);
   });
 }
 
 // openDir открывает директорию.
-// reset=true — начинаем новый путь от корня (клик в сайдбаре).
+// reset=true  — новый путь от корня (клик в сайдбаре).
 // reset=false — идём вглубь (клик на подпапку внутри контента).
 async function openDir(dir, reset) {
   if (reset) dirStack = [dir];
@@ -208,42 +232,74 @@ async function openDir(dir, reset) {
 
   renderBreadcrumb();
   document.getElementById('content-actions').style.display = '';
-  await loadDirContent(dir.id);
 
-  // Обновить активный элемент в сайдбаре
+  // Обновить активный элемент сайдбара
   document.querySelectorAll('.dir-item').forEach(el => {
-    el.classList.toggle('active', el.querySelector('.name')?.title === dir.name && reset);
+    el.classList.toggle('active', el.querySelector('.name')?.title === dirStack[0].name);
   });
+
+  await loadDirContent(dir.id);
 }
 
+// renderBreadcrumb строит путь без innerHTML +=.
+// innerHTML += перепарсивает весь DOM и уничтожает ранее добавленные onclick.
 function renderBreadcrumb() {
   const el = document.getElementById('breadcrumb');
-  el.innerHTML = '<span onclick="refreshDirs();clearContent()">🏠</span>';
+  // Очищаем через removeChild чтобы не перепарсивать
+  while (el.firstChild) el.removeChild(el.firstChild);
+
+  const home = document.createElement('span');
+  home.textContent = '🏠';
+  home.className = 'bc-link';
+  home.onclick = () => { dirStack = []; refreshDirs(); clearContent(); };
+  el.appendChild(home);
+
   dirStack.forEach((d, i) => {
-    el.innerHTML += ' / ';
+    const sep = document.createElement('span');
+    sep.textContent = ' / ';
+    sep.style.color = '#555';
+    el.appendChild(sep);
+
     if (i < dirStack.length - 1) {
-      const sp = document.createElement('span');
-      sp.textContent = d.name;
-      sp.onclick = () => { dirStack = dirStack.slice(0, i+1); renderBreadcrumb(); loadDirContent(d.id); };
-      el.appendChild(sp);
+      // Промежуточные элементы — кликабельные
+      const link = document.createElement('span');
+      link.textContent = d.name;
+      link.className = 'bc-link';
+      link.onclick = () => {
+        dirStack = dirStack.slice(0, i + 1);
+        renderBreadcrumb();
+        loadDirContent(d.id);
+      };
+      el.appendChild(link);
     } else {
-      el.innerHTML += `<b style="color:#e0e0e0">${esc(d.name)}</b>`;
+      // Текущая папка — не кликабельная
+      const cur = document.createElement('b');
+      cur.textContent = d.name;
+      cur.style.color = '#e0e0e0';
+      el.appendChild(cur);
     }
   });
 }
 
 function clearContent() {
   dirStack = [];
-  document.getElementById('breadcrumb').innerHTML = '<span style="color:#555">Выберите папку</span>';
+  const bc = document.getElementById('breadcrumb');
+  while (bc.firstChild) bc.removeChild(bc.firstChild);
+  const placeholder = document.createElement('span');
+  placeholder.style.color = '#555';
+  placeholder.textContent = 'Выберите папку';
+  bc.appendChild(placeholder);
+
   document.getElementById('content-actions').style.display = 'none';
-  document.getElementById('file-list').innerHTML = '<div class="empty" style="padding:1rem">Выберите папку слева</div>';
+  document.getElementById('file-list').innerHTML =
+    '<div class="empty" style="padding:1rem">Выберите папку слева</div>';
 }
 
 async function loadDirContent(dirId) {
   try {
     const data = await api('GET', '/api/dirs/' + dirId);
     renderContent(data);
-  } catch(e) { console.error('loadDirContent:', e); }
+  } catch (e) { console.error('loadDirContent:', e); }
 }
 
 function renderContent(data) {
@@ -254,17 +310,37 @@ function renderContent(data) {
   const files   = data.files       || [];
 
   if (!subdirs.length && !files.length) {
-    el.innerHTML = '<div class="empty">Папка пуста. Создай подпапку или загрузи файл.</div>';
+    const msg = document.createElement('div');
+    msg.className = 'empty';
+    msg.textContent = 'Папка пуста. Создай подпапку или загрузи файл.';
+    el.appendChild(msg);
     return;
   }
 
-  // Подпапки
+  // Подпапки — строим через createElement, не innerHTML, чтобы onclick работал надёжно
   subdirs.forEach(d => {
     const row = document.createElement('div');
     row.className = 'row';
-    row.innerHTML = `<span>📁</span>
-      <span class="name" style="cursor:pointer;color:#8af" onclick="openDir({id:'${d.id}',name:'${esc(d.name)}'},false)">${esc(d.name)}</span>
-      <button class="btn btn-sm btn-danger" onclick="deleteDir('${d.id}')">✕</button>`;
+
+    const icon = document.createElement('span');
+    icon.textContent = '📁';
+
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = d.name;
+    name.style.cursor = 'pointer';
+    name.style.color  = '#8af';
+    // onclick через свойство — безопасно, работает с любыми именами папок
+    name.onclick = () => openDir({ id: d.id, name: d.name }, false);
+
+    const del = document.createElement('button');
+    del.className = 'btn btn-sm btn-danger';
+    del.textContent = '✕';
+    del.onclick = () => deleteDir(d.id);
+
+    row.appendChild(icon);
+    row.appendChild(name);
+    row.appendChild(del);
     el.appendChild(row);
   });
 
@@ -272,54 +348,77 @@ function renderContent(data) {
   files.forEach(f => {
     const row = document.createElement('div');
     row.className = 'row';
-    row.innerHTML = `<span>📄</span>
-      <span class="name">${esc(f.original_name)}</span>
-      <span class="meta">${fmtSize(f.size_bytes)}</span>
-      ${f.is_encrypted ? '<span class="badge">🔒</span>' : ''}
-      <button class="btn btn-sm" onclick="downloadFile('${f.id}','${esc(f.original_name)}')">↓</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteFile('${f.id}')">✕</button>`;
+
+    const icon = document.createElement('span');
+    icon.textContent = '📄';
+
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = f.original_name;
+
+    const size = document.createElement('span');
+    size.className = 'meta';
+    size.textContent = fmtSize(f.size_bytes);
+
+    const dl = document.createElement('button');
+    dl.className = 'btn btn-sm';
+    dl.textContent = '↓';
+    dl.onclick = () => downloadFile(f.id, f.original_name);
+
+    const rm = document.createElement('button');
+    rm.className = 'btn btn-sm btn-danger';
+    rm.textContent = '✕';
+    rm.onclick = () => deleteFile(f.id);
+
+    row.appendChild(icon);
+    row.appendChild(name);
+    row.appendChild(size);
+    if (f.is_encrypted) {
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = '🔒';
+      row.appendChild(badge);
+    }
+    row.appendChild(dl);
+    row.appendChild(rm);
     el.appendChild(row);
   });
 }
 
-// Создать корневую папку (из сайдбара, parent_id = null)
 async function createRootDir() {
   const name = prompt('Имя корневой папки:');
   if (!name?.trim()) return;
   try {
     await api('POST', '/api/dirs', { name: name.trim(), parent_id: null });
     await refreshDirs();
-  } catch(e) { alert('Ошибка: ' + e); }
+  } catch (e) { alert('Ошибка: ' + e); }
 }
 
-// Создать подпапку в текущей открытой директории
 async function createSubDir() {
   if (!dirStack.length) { alert('Откройте папку'); return; }
   const parent = dirStack[dirStack.length - 1];
-  const name = prompt(`Подпапка внутри "${parent.name}":`);
+  const name = prompt('Подпапка в "' + parent.name + '":');
   if (!name?.trim()) return;
   try {
-    const created = await api('POST', '/api/dirs', { name: name.trim(), parent_id: parent.id });
+    await api('POST', '/api/dirs', { name: name.trim(), parent_id: parent.id });
     await loadDirContent(parent.id);
-  } catch(e) { alert('Ошибка: ' + e); }
+  } catch (e) { alert('Ошибка: ' + e); }
 }
 
 async function deleteDir(id) {
   if (!confirm('Удалить папку и всё содержимое?')) return;
   try {
-    await fetch('/api/dirs/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
-    // Если удалили текущую или предка — вернуться наверх
-    const idx = dirStack.findIndex(d => d.id === id);
-    if (idx !== -1) clearContent();
+    await fetch('/api/dirs/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+    if (dirStack.some(d => d.id === id)) clearContent();
     await refreshDirs();
-  } catch(e) { alert('Ошибка: ' + e); }
+  } catch (e) { alert('Ошибка: ' + e); }
 }
 
-// ── Files ─────────────────────────────────────────────────────────────────
+// ── Files ─────────────────────────────────────────────────────────────────────
 
 async function uploadFiles() {
   const input = document.getElementById('file-input');
-  if (!dirStack.length) { alert('Откройте папку'); input.value=''; return; }
+  if (!dirStack.length) { alert('Откройте папку'); input.value = ''; return; }
   const dirId = dirStack[dirStack.length - 1].id;
 
   for (const file of input.files) {
@@ -330,18 +429,17 @@ async function uploadFiles() {
     try {
       await fetch('/api/files', {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token },
+        headers: { Authorization: 'Bearer ' + token },
         body: form,
       });
-    } catch(e) { alert('Ошибка загрузки ' + file.name + ': ' + e); }
+    } catch (e) { alert('Ошибка загрузки ' + file.name + ': ' + e); }
   }
   input.value = '';
   await loadDirContent(dirId);
 }
 
 function downloadFile(id, name) {
-  // Fetch + Blob — единственный способ передать Authorization заголовок при скачивании
-  fetch('/api/files/' + id, { headers: { 'Authorization': 'Bearer ' + token } })
+  fetch('/api/files/' + id, { headers: { Authorization: 'Bearer ' + token } })
     .then(r => {
       if (!r.ok) return r.json().then(j => Promise.reject(j.error || r.statusText));
       return r.blob();
@@ -359,12 +457,12 @@ function downloadFile(id, name) {
 async function deleteFile(id) {
   if (!confirm('Удалить файл?')) return;
   try {
-    await fetch('/api/files/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
-    if (dirStack.length) await loadDirContent(dirStack[dirStack.length-1].id);
-  } catch(e) { alert('Ошибка: ' + e); }
+    await fetch('/api/files/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+    if (dirStack.length) await loadDirContent(dirStack[dirStack.length - 1].id);
+  } catch (e) { alert('Ошибка: ' + e); }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function api(method, path, body) {
   const opts = { method, headers: {} };
@@ -377,18 +475,12 @@ function api(method, path, body) {
 }
 
 function fmtSize(b) {
-  if (b < 1024)       return b + ' B';
-  if (b < 1024*1024)  return (b/1024).toFixed(1) + ' KB';
-  return (b/1024/1024).toFixed(1) + ' MB';
+  if (b < 1024)      return b + ' B';
+  if (b < 1048576)   return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
 }
 
-function esc(s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Auto-login
+// Auto-login если токен ещё жив в этой вкладке
 if (token) showApp();
 </script>
 </body>
