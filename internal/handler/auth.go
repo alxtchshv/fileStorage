@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"managerFiles/internal/model"
 	"managerFiles/internal/service"
@@ -14,40 +15,76 @@ type AuthHandler struct {
 }
 
 // Register — POST /api/auth/register
-// Декодируй JSON в model.RegisterInput, вызови svc.Register, верни 201 + UserResponse.
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	var input model.RegisterInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		respondError(w, http.StatusBadRequest, "неверный формат JSON")
+		return
+	}
+	user, err := h.svc.Register(r.Context(), &input)
+	if err != nil {
+		mapServiceError(w, err)
+		return
+	}
+	respondJSON(w, http.StatusCreated, user)
 }
 
 // Login — POST /api/auth/login
-// Декодируй JSON в model.LoginInput, вызови svc.Login, верни 200 + TokenPair.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var input model.LoginInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		respondError(w, http.StatusBadRequest, "неверный формат JSON")
+		return
+	}
+	pair, err := h.svc.Login(r.Context(), &input)
+	if err != nil {
+		mapServiceError(w, err)
+		return
+	}
+	respondJSON(w, http.StatusOK, pair)
 }
 
 // Refresh — POST /api/auth/refresh
-// Декодируй JSON в model.RefreshInput, вызови svc.Refresh, верни 200 + новый TokenPair.
 func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
+	var input model.RefreshInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		respondError(w, http.StatusBadRequest, "неверный формат JSON")
+		return
+	}
+	pair, err := h.svc.Refresh(r.Context(), input.RefreshToken)
+	if err != nil {
+		mapServiceError(w, err)
+		return
+	}
+	respondJSON(w, http.StatusOK, pair)
 }
 
-// Logout — POST /api/auth/logout
-// Достань токен из заголовка "Authorization: Bearer <token>" через strings.CutPrefix.
-// Вызови svc.Logout, верни 204 No Content.
+// Logout — POST /api/auth/logout (Authorization: Bearer <access_token>)
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	tokenStr, found := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if !found || tokenStr == "" {
+		respondError(w, http.StatusUnauthorized, "требуется токен")
+		return
+	}
+	if err := h.svc.Logout(r.Context(), tokenStr); err != nil {
+		mapServiceError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
-// respondJSON сериализует data в JSON и пишет в w с нужным статусом.
 func respondJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
 }
 
-// respondError пишет JSON ошибку: {"error": "msg"}.
 func respondError(w http.ResponseWriter, status int, msg string) {
 	respondJSON(w, status, map[string]string{"error": msg})
 }
 
 // mapServiceError переводит доменные ошибки в HTTP статус коды.
-// errors.Is проверяет всю цепочку ошибок (errors.Unwrap).
+// errors.Is проверяет всю цепочку ошибок через errors.Unwrap.
 func mapServiceError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, model.ErrUnauthorized), errors.Is(err, model.ErrInvalidCredentials),
