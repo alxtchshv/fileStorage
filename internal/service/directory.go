@@ -41,18 +41,18 @@ func (s *directoryService) Create(ctx context.Context, userID string, input *mod
 
 	}
 
-	s.dirs.Create(ctx, &model.Directory{
+	dir := &model.Directory{
 		ID:       uuid.New().String(),
 		UserID:   userID,
 		ParentID: input.ParentID,
 		Name:     input.Name,
-	})
+	}
 
-	return &model.DirectoryResponse{
-		ID:       uuid.New().String(),
-		ParentID: input.ParentID,
-		Name:     input.Name,
-	}, nil
+	if err := s.dirs.Create(ctx, dir); err != nil {
+		return nil, err
+	}
+
+	return dir.ToResponse(), nil
 }
 
 // Get возвращает содержимое директории (поддиректории + файлы).

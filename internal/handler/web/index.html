@@ -9,40 +9,51 @@ body { font-family: monospace; background: #1a1a1a; color: #e0e0e0; height: 100v
 #auth { display: flex; align-items: center; justify-content: center; flex: 1; }
 #app { display: none; flex-direction: column; flex: 1; overflow: hidden; }
 .card { background: #2a2a2a; border: 1px solid #444; padding: 2rem; width: 340px; }
-h2 { margin-bottom: 1.5rem; color: #fff; font-size: 1.1rem; }
 input { display: block; width: 100%; margin-bottom: 0.8rem; padding: 0.5rem; background: #1a1a1a; border: 1px solid #555; color: #e0e0e0; font-family: monospace; }
 input:focus { outline: none; border-color: #888; }
 .btn { padding: 0.5rem 1rem; background: #333; border: 1px solid #666; color: #e0e0e0; cursor: pointer; font-family: monospace; }
 .btn:hover { background: #444; }
-.btn-sm { padding: 0.25rem 0.6rem; font-size: 0.85rem; }
-.btn-danger { border-color: #c00; }
+.btn-sm { padding: 0.2rem 0.55rem; font-size: 0.82rem; }
+.btn-danger { border-color: #700; color: #f88; }
 .btn-danger:hover { background: #300; }
+.btn-primary { border-color: #468; color: #8af; }
+.btn-primary:hover { background: #234; }
 .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
 .tab { cursor: pointer; padding: 0.4rem 1rem; border: 1px solid #444; color: #aaa; }
 .tab.active { border-color: #888; color: #fff; background: #333; }
 .err { color: #f88; font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2rem; }
-/* app layout */
-#topbar { background: #2a2a2a; border-bottom: 1px solid #444; padding: 0.6rem 1rem; display: flex; align-items: center; justify-content: space-between; }
-#topbar span { color: #aaa; font-size: 0.85rem; }
+.ok  { color: #8f8; font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.2rem; }
+/* layout */
+#topbar { background: #2a2a2a; border-bottom: 1px solid #444; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.8rem; }
+#topbar .title { font-weight: bold; margin-right: auto; }
+#topbar .user { color: #888; font-size: 0.82rem; }
 #main { display: flex; flex: 1; overflow: hidden; }
-#sidebar { width: 240px; border-right: 1px solid #444; overflow-y: auto; padding: 0.5rem; }
-#content { flex: 1; overflow-y: auto; padding: 1rem; }
-.sidebar-item { padding: 0.35rem 0.5rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; border-radius: 2px; font-size: 0.9rem; }
-.sidebar-item:hover { background: #333; }
-.sidebar-item.active { background: #333; color: #fff; }
-.sidebar-actions { padding: 0.5rem; display: flex; gap: 0.4rem; border-bottom: 1px solid #333; margin-bottom: 0.5rem; }
-.file-row { display: flex; align-items: center; padding: 0.4rem 0.5rem; border-bottom: 1px solid #333; gap: 0.5rem; }
-.file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.file-size { color: #888; font-size: 0.8rem; min-width: 70px; text-align: right; }
-.section-title { color: #888; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; }
-#upload-bar { padding: 0.6rem 1rem; background: #2a2a2a; border-top: 1px solid #444; display: flex; gap: 0.5rem; align-items: center; }
-#upload-bar input[type=file] { flex: 1; border: 1px dashed #555; padding: 0.4rem; }
-.badge { font-size: 0.75rem; padding: 0.1rem 0.4rem; background: #333; border: 1px solid #555; color: #aaa; }
+#sidebar { width: 220px; border-right: 1px solid #444; display: flex; flex-direction: column; }
+#sidebar-actions { padding: 0.5rem; display: flex; gap: 0.4rem; border-bottom: 1px solid #333; }
+#dir-list { flex: 1; overflow-y: auto; padding: 0.3rem; }
+#content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+#breadcrumb { padding: 0.5rem 1rem; background: #222; border-bottom: 1px solid #333; font-size: 0.85rem; color: #888; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+#breadcrumb span { cursor: pointer; color: #8af; }
+#breadcrumb span:hover { text-decoration: underline; }
+#content-actions { padding: 0.5rem 1rem; display: flex; gap: 0.5rem; align-items: center; border-bottom: 1px solid #333; }
+#file-list { flex: 1; overflow-y: auto; padding: 0.5rem 1rem; }
+#upload-bar { padding: 0.5rem 1rem; background: #222; border-top: 1px solid #333; display: flex; gap: 0.5rem; align-items: center; }
+#upload-bar input[type=file] { flex: 1; border: 1px dashed #555; padding: 0.3rem; color: #aaa; }
+.dir-item { padding: 0.3rem 0.4rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; border-radius: 2px; font-size: 0.88rem; white-space: nowrap; }
+.dir-item:hover { background: #2e2e2e; }
+.dir-item.active { background: #333; }
+.dir-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.row { display: flex; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid #2a2a2a; gap: 0.4rem; }
+.row:hover { background: #1e1e1e; }
+.row .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .meta { color: #666; font-size: 0.8rem; min-width: 60px; text-align: right; }
+.badge { font-size: 0.7rem; padding: 0.1rem 0.3rem; border: 1px solid #555; color: #888; }
+.empty { color: #555; padding: 1rem 0; font-size: 0.9rem; }
 </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
+<!-- AUTH -->
 <div id="auth">
   <div class="card">
     <div class="tabs">
@@ -50,8 +61,8 @@ input:focus { outline: none; border-color: #888; }
       <div class="tab" onclick="switchTab('register')">Регистрация</div>
     </div>
     <div id="tab-login">
-      <input id="l-email" placeholder="Email" type="email">
-      <input id="l-pass" placeholder="Пароль" type="password">
+      <input id="l-email" placeholder="Email" type="email" onkeydown="if(event.key==='Enter')login()">
+      <input id="l-pass"  placeholder="Пароль" type="password" onkeydown="if(event.key==='Enter')login()">
       <button class="btn" style="width:100%" onclick="login()">Войти</button>
     </div>
     <div id="tab-register" style="display:none">
@@ -60,143 +71,210 @@ input:focus { outline: none; border-color: #888; }
       <input id="r-pass" placeholder="Пароль (мин. 8 символов)" type="password">
       <button class="btn" style="width:100%" onclick="register()">Зарегистрироваться</button>
     </div>
-    <div class="err" id="auth-err"></div>
+    <div id="auth-msg" class="err"></div>
   </div>
 </div>
 
-<!-- APP SCREEN -->
+<!-- APP -->
 <div id="app">
   <div id="topbar">
-    <b>Cloud Storage</b>
-    <span id="user-label"></span>
+    <span class="title">☁ Cloud Storage</span>
+    <span class="user" id="user-label"></span>
     <button class="btn btn-sm" onclick="logout()">Выйти</button>
   </div>
+
   <div id="main">
+    <!-- Sidebar: root dirs -->
     <div id="sidebar">
-      <div class="sidebar-actions">
-        <button class="btn btn-sm" onclick="createDir()">+ Папка</button>
-        <button class="btn btn-sm" onclick="refreshDirs()">↻</button>
+      <div id="sidebar-actions">
+        <button class="btn btn-sm" title="Создать корневую папку" onclick="createRootDir()">+ Папка</button>
+        <button class="btn btn-sm" title="Обновить" onclick="refreshDirs()">↻</button>
       </div>
       <div id="dir-list"></div>
     </div>
+
+    <!-- Content: current dir -->
     <div id="content">
-      <div class="section-title" id="content-title">Выберите папку</div>
-      <div id="file-list"></div>
+      <div id="breadcrumb"><span style="color:#555">Выберите папку</span></div>
+      <div id="content-actions" style="display:none">
+        <button class="btn btn-sm btn-primary" onclick="createSubDir()">+ Подпапка</button>
+        <span style="flex:1"></span>
+        <label class="btn btn-sm" style="cursor:pointer">
+          Загрузить файл
+          <input type="file" id="file-input" multiple style="display:none" onchange="uploadFiles()">
+        </label>
+      </div>
+      <div id="file-list"><div class="empty" style="padding:1rem">Выберите папку слева</div></div>
     </div>
-  </div>
-  <div id="upload-bar">
-    <input type="file" id="file-input" multiple>
-    <button class="btn btn-sm" onclick="uploadFiles()">Загрузить</button>
   </div>
 </div>
 
 <script>
 let token = localStorage.getItem('token') || '';
-let currentDirId = null;
-let currentDirName = '';
+// Stack of { id, name } — текущий путь в дереве директорий
+let dirStack = [];
 
-function api(method, path, body, isForm) {
-  const opts = { method, headers: {} };
-  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
-  if (body && !isForm) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
-  if (isForm) opts.body = body;
-  return fetch(path, opts).then(r => r.ok ? r.json().catch(() => null) : r.json().then(j => Promise.reject(j.error || 'Ошибка')));
-}
+// ── Auth ──────────────────────────────────────────────────────────────────
 
 function switchTab(t) {
-  document.getElementById('tab-login').style.display = t === 'login' ? '' : 'none';
+  document.getElementById('tab-login').style.display    = t === 'login'    ? '' : 'none';
   document.getElementById('tab-register').style.display = t === 'register' ? '' : 'none';
-  document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', (i === 0) === (t === 'login')));
-  document.getElementById('auth-err').textContent = '';
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', i === (t==='login'?0:1)));
+  setMsg('', false);
+}
+
+function setMsg(text, isErr=true) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = text;
+  el.className = isErr ? 'err' : 'ok';
 }
 
 async function login() {
-  const email = document.getElementById('l-email').value;
-  const pass = document.getElementById('l-pass').value;
   try {
-    const r = await api('POST', '/api/auth/login', { email, password: pass });
+    const r = await api('POST', '/api/auth/login', {
+      email:    document.getElementById('l-email').value,
+      password: document.getElementById('l-pass').value,
+    });
     token = r.access_token;
     localStorage.setItem('token', token);
-    localStorage.setItem('email', email);
+    localStorage.setItem('email', document.getElementById('l-email').value);
     showApp();
-  } catch(e) { document.getElementById('auth-err').textContent = e; }
+  } catch(e) { setMsg(e); }
 }
 
 async function register() {
-  const username = document.getElementById('r-name').value;
-  const email = document.getElementById('r-email').value;
-  const pass = document.getElementById('r-pass').value;
   try {
-    await api('POST', '/api/auth/register', { username, email, password: pass });
+    await api('POST', '/api/auth/register', {
+      username: document.getElementById('r-name').value,
+      email:    document.getElementById('r-email').value,
+      password: document.getElementById('r-pass').value,
+    });
+    document.getElementById('l-email').value = document.getElementById('r-email').value;
     switchTab('login');
-    document.getElementById('l-email').value = email;
-    document.getElementById('auth-err').textContent = 'Зарегистрирован! Теперь войдите.';
-    document.getElementById('auth-err').style.color = '#8f8';
-  } catch(e) { document.getElementById('auth-err').textContent = e; }
+    setMsg('Зарегистрирован! Теперь войдите.', false);
+  } catch(e) { setMsg(e); }
 }
 
 async function logout() {
-  try { await api('POST', '/api/auth/logout'); } catch(_) {}
+  try { await api('POST', '/api/auth/logout'); } catch(_){}
   token = '';
   localStorage.removeItem('token');
-  document.getElementById('app').style.display = 'none';
+  document.getElementById('app').style.display  = 'none';
   document.getElementById('auth').style.display = 'flex';
 }
 
+// ── App init ──────────────────────────────────────────────────────────────
+
 function showApp() {
   document.getElementById('auth').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').style.display  = 'flex';
   document.getElementById('user-label').textContent = localStorage.getItem('email') || '';
   refreshDirs();
 }
 
+// ── Directories ───────────────────────────────────────────────────────────
+
 async function refreshDirs() {
   try {
     const dirs = await api('GET', '/api/dirs');
-    renderDirs(dirs || []);
-  } catch(e) { console.error(e); }
+    renderSidebar(dirs || []);
+  } catch(e) { console.error('refreshDirs:', e); }
 }
 
-function renderDirs(dirs) {
+function renderSidebar(dirs) {
   const el = document.getElementById('dir-list');
   el.innerHTML = '';
-  if (!dirs.length) { el.innerHTML = '<div style="color:#666;padding:0.5rem;font-size:0.85rem">Нет папок</div>'; return; }
+  if (!dirs.length) {
+    el.innerHTML = '<div style="color:#555;padding:0.5rem;font-size:0.82rem">Нет папок. Создай первую.</div>';
+    return;
+  }
+  const curId = dirStack.length ? dirStack[0].id : null;
   dirs.forEach(d => {
     const item = document.createElement('div');
-    item.className = 'sidebar-item' + (d.id === currentDirId ? ' active' : '');
-    item.innerHTML = `📁 <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.name)}</span>
-      <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteDir('${d.id}')" title="Удалить">✕</button>`;
-    item.onclick = () => openDir(d.id, d.name);
+    item.className = 'dir-item' + (d.id === curId ? ' active' : '');
+    item.innerHTML = `<span>📁</span><span class="name" title="${esc(d.name)}">${esc(d.name)}</span>
+      <button class="btn btn-sm btn-danger" title="Удалить" onclick="event.stopPropagation();deleteDir('${d.id}')">✕</button>`;
+    item.onclick = () => openDir(d, true);
     el.appendChild(item);
   });
 }
 
-async function openDir(id, name) {
-  currentDirId = id;
-  currentDirName = name;
-  document.getElementById('content-title').textContent = '📁 ' + name;
-  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.toggle('active', el.dataset.id === id));
-  await refreshFiles();
+// openDir открывает директорию.
+// reset=true — начинаем новый путь от корня (клик в сайдбаре).
+// reset=false — идём вглубь (клик на подпапку внутри контента).
+async function openDir(dir, reset) {
+  if (reset) dirStack = [dir];
+  else       dirStack.push(dir);
+
+  renderBreadcrumb();
+  document.getElementById('content-actions').style.display = '';
+  await loadDirContent(dir.id);
+
+  // Обновить активный элемент в сайдбаре
+  document.querySelectorAll('.dir-item').forEach(el => {
+    el.classList.toggle('active', el.querySelector('.name')?.title === dir.name && reset);
+  });
 }
 
-async function refreshFiles() {
-  if (!currentDirId) return;
+function renderBreadcrumb() {
+  const el = document.getElementById('breadcrumb');
+  el.innerHTML = '<span onclick="refreshDirs();clearContent()">🏠</span>';
+  dirStack.forEach((d, i) => {
+    el.innerHTML += ' / ';
+    if (i < dirStack.length - 1) {
+      const sp = document.createElement('span');
+      sp.textContent = d.name;
+      sp.onclick = () => { dirStack = dirStack.slice(0, i+1); renderBreadcrumb(); loadDirContent(d.id); };
+      el.appendChild(sp);
+    } else {
+      el.innerHTML += `<b style="color:#e0e0e0">${esc(d.name)}</b>`;
+    }
+  });
+}
+
+function clearContent() {
+  dirStack = [];
+  document.getElementById('breadcrumb').innerHTML = '<span style="color:#555">Выберите папку</span>';
+  document.getElementById('content-actions').style.display = 'none';
+  document.getElementById('file-list').innerHTML = '<div class="empty" style="padding:1rem">Выберите папку слева</div>';
+}
+
+async function loadDirContent(dirId) {
   try {
-    const data = await api('GET', '/api/dirs/' + currentDirId);
-    renderFiles(data?.files || []);
-  } catch(e) { console.error(e); }
+    const data = await api('GET', '/api/dirs/' + dirId);
+    renderContent(data);
+  } catch(e) { console.error('loadDirContent:', e); }
 }
 
-function renderFiles(files) {
+function renderContent(data) {
   const el = document.getElementById('file-list');
   el.innerHTML = '';
-  if (!files.length) { el.innerHTML = '<div style="color:#666;margin-top:1rem;font-size:0.85rem">Папка пуста. Загрузите файлы.</div>'; return; }
+
+  const subdirs = data.directories || [];
+  const files   = data.files       || [];
+
+  if (!subdirs.length && !files.length) {
+    el.innerHTML = '<div class="empty">Папка пуста. Создай подпапку или загрузи файл.</div>';
+    return;
+  }
+
+  // Подпапки
+  subdirs.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `<span>📁</span>
+      <span class="name" style="cursor:pointer;color:#8af" onclick="openDir({id:'${d.id}',name:'${esc(d.name)}'},false)">${esc(d.name)}</span>
+      <button class="btn btn-sm btn-danger" onclick="deleteDir('${d.id}')">✕</button>`;
+    el.appendChild(row);
+  });
+
+  // Файлы
   files.forEach(f => {
     const row = document.createElement('div');
-    row.className = 'file-row';
+    row.className = 'row';
     row.innerHTML = `<span>📄</span>
-      <span class="file-name">${esc(f.original_name)}</span>
-      <span class="file-size">${fmtSize(f.size_bytes)}</span>
+      <span class="name">${esc(f.original_name)}</span>
+      <span class="meta">${fmtSize(f.size_bytes)}</span>
       ${f.is_encrypted ? '<span class="badge">🔒</span>' : ''}
       <button class="btn btn-sm" onclick="downloadFile('${f.id}','${esc(f.original_name)}')">↓</button>
       <button class="btn btn-sm btn-danger" onclick="deleteFile('${f.id}')">✕</button>`;
@@ -204,12 +282,25 @@ function renderFiles(files) {
   });
 }
 
-async function createDir() {
-  const name = prompt('Имя папки:');
-  if (!name) return;
+// Создать корневую папку (из сайдбара, parent_id = null)
+async function createRootDir() {
+  const name = prompt('Имя корневой папки:');
+  if (!name?.trim()) return;
   try {
-    await api('POST', '/api/dirs', { name, parent_id: null });
+    await api('POST', '/api/dirs', { name: name.trim(), parent_id: null });
     await refreshDirs();
+  } catch(e) { alert('Ошибка: ' + e); }
+}
+
+// Создать подпапку в текущей открытой директории
+async function createSubDir() {
+  if (!dirStack.length) { alert('Откройте папку'); return; }
+  const parent = dirStack[dirStack.length - 1];
+  const name = prompt(`Подпапка внутри "${parent.name}":`);
+  if (!name?.trim()) return;
+  try {
+    const created = await api('POST', '/api/dirs', { name: name.trim(), parent_id: parent.id });
+    await loadDirContent(parent.id);
   } catch(e) { alert('Ошибка: ' + e); }
 }
 
@@ -217,55 +308,87 @@ async function deleteDir(id) {
   if (!confirm('Удалить папку и всё содержимое?')) return;
   try {
     await fetch('/api/dirs/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
-    if (currentDirId === id) { currentDirId = null; document.getElementById('file-list').innerHTML = ''; document.getElementById('content-title').textContent = 'Выберите папку'; }
+    // Если удалили текущую или предка — вернуться наверх
+    const idx = dirStack.findIndex(d => d.id === id);
+    if (idx !== -1) clearContent();
     await refreshDirs();
   } catch(e) { alert('Ошибка: ' + e); }
 }
 
+// ── Files ─────────────────────────────────────────────────────────────────
+
 async function uploadFiles() {
-  if (!currentDirId) { alert('Выберите папку'); return; }
   const input = document.getElementById('file-input');
-  if (!input.files.length) { alert('Выберите файл'); return; }
+  if (!dirStack.length) { alert('Откройте папку'); input.value=''; return; }
+  const dirId = dirStack[dirStack.length - 1].id;
+
   for (const file of input.files) {
     const form = new FormData();
     form.append('file', file);
-    form.append('directory_id', currentDirId);
+    form.append('directory_id', dirId);
     form.append('encrypt', 'true');
     try {
-      await fetch('/api/files', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: form });
+      await fetch('/api/files', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: form,
+      });
     } catch(e) { alert('Ошибка загрузки ' + file.name + ': ' + e); }
   }
   input.value = '';
-  await refreshFiles();
+  await loadDirContent(dirId);
 }
 
 function downloadFile(id, name) {
-  const a = document.createElement('a');
-  a.href = '/api/files/' + id;
-  a.download = name;
-  // Токен нельзя передать через <a href> напрямую — используем fetch + blob
+  // Fetch + Blob — единственный способ передать Authorization заголовок при скачивании
   fetch('/api/files/' + id, { headers: { 'Authorization': 'Bearer ' + token } })
-    .then(r => r.blob())
-    .then(blob => { a.href = URL.createObjectURL(blob); a.click(); URL.revokeObjectURL(a.href); })
-    .catch(e => alert('Ошибка: ' + e));
+    .then(r => {
+      if (!r.ok) return r.json().then(j => Promise.reject(j.error || r.statusText));
+      return r.blob();
+    })
+    .then(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    })
+    .catch(e => alert('Ошибка скачивания: ' + e));
 }
 
 async function deleteFile(id) {
   if (!confirm('Удалить файл?')) return;
   try {
     await fetch('/api/files/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
-    await refreshFiles();
+    if (dirStack.length) await loadDirContent(dirStack[dirStack.length-1].id);
   } catch(e) { alert('Ошибка: ' + e); }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+function api(method, path, body) {
+  const opts = { method, headers: {} };
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  if (body)  { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  return fetch(path, opts).then(r =>
+    r.ok ? r.json().catch(() => null)
+         : r.json().then(j => Promise.reject(j.error || r.statusText))
+  );
+}
+
 function fmtSize(b) {
-  if (b < 1024) return b + ' B';
-  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  if (b < 1024)       return b + ' B';
+  if (b < 1024*1024)  return (b/1024).toFixed(1) + ' KB';
   return (b/1024/1024).toFixed(1) + ' MB';
 }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// Auto-login if token exists
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Auto-login
 if (token) showApp();
 </script>
 </body>
