@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"sync"
+	"time"
 
 	"managerFiles/internal/config"
 	"managerFiles/internal/model"
@@ -51,7 +52,8 @@ func newConsumer(cfg *config.Config, topic string) *Consumer {
 }
 
 // Run читает сообщения пока ctx не отменён.
-// При ошибке чтения — логирует и продолжает (не останавливает consumer).
+// При ошибке чтения — логирует и делает паузу перед retry (не останавливает consumer).
+// Если Kafka недоступна при старте — consumer продолжает попытки подключиться.
 func (c *Consumer) Run(ctx context.Context) {
 	slog.Info("consumer запущен", "topic", c.topic)
 	for {
@@ -61,7 +63,13 @@ func (c *Consumer) Run(ctx context.Context) {
 				slog.Info("consumer остановлен", "topic", c.topic)
 				return
 			}
-			slog.Error("ошибка чтения из Kafka", "topic", c.topic, "err", err)
+			slog.Warn("Kafka недоступна, повтор через 5с", "topic", c.topic, "err", err)
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(5 * time.Second):
+				continue
+			}
 			continue
 		}
 		if err := c.handleByTopic(ctx, msg.Value); err != nil {
