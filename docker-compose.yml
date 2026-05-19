@@ -1,28 +1,44 @@
 version: "3.9"
 
-# Docker Compose запускает все сервисы одной командой: docker compose up -d
-# Каждый сервис — отдельный контейнер в общей виртуальной сети.
-
 services:
 
-  # --- Наш Go сервис ---
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     DB_HOST: postgres        # имя контейнера = hostname внутри Docker сети
-  #     REDIS_ADDR: redis:6379
-  #     ...
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy   # ждём пока PostgreSQL готов принимать соединения
-  #     redis:
-  #       condition: service_healthy
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: "8080"
+      LOG_LEVEL: debug
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-1641golf}
+      DB_NAME: ${DB_NAME:-managerFiles}
+      DB_MAX_CONNS: "10"
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: ""
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET: files
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_GROUP_ID: managerfiles-group
+      JWT_SECRET: ${JWT_SECRET:-secretFileStorage}
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 168h
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2}
+      WORKER_COUNT: "5"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
 
-  # --- PostgreSQL ---
   postgres:
     image: postgres:16-alpine
     environment:
@@ -30,7 +46,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-1641golf}
       POSTGRES_DB: ${DB_NAME:-managerFiles}
     volumes:
-      - postgres-data:/var/lib/postgresql/data  # данные сохраняются между перезапусками
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -39,7 +55,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- Redis ---
   redis:
     image: redis:7-alpine
     volumes:
@@ -52,53 +67,64 @@ services:
       timeout: 3s
       retries: 5
 
-  # --- MinIO (S3-совместимое хранилище файлов) ---
-  # minio:
-  #   image: minio/minio:latest
-  #   command: server /data --console-address ":9001"
-  #   environment:
-  #     MINIO_ROOT_USER: minioadmin
-  #     MINIO_ROOT_PASSWORD: minioadmin
-  #   volumes:
-  #     - minio-data:/data
-  #   ports:
-  #     - "9000:9000"   # S3 API
-  #     - "9001:9001"   # Web UI: localhost:9001
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # --- Kafka ---
-  # zookeeper:
-  #   image: confluentinc/cp-zookeeper:7.5.0
-  #   environment:
-  #     ZOOKEEPER_CLIENT_PORT: 2181
-  #
-  # kafka:
-  #   image: confluentinc/cp-kafka:7.5.0
-  #   depends_on: [zookeeper]
-  #   environment:
-  #     KAFKA_BROKER_ID: 1
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-  #   ports:
-  #     - "29092:29092"
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper
 
-  # --- Prometheus + Grafana (метрики) ---
-  # prometheus:
-  #   image: prom/prometheus:latest
-  #   volumes:
-  #     - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
-  #   ports:
-  #     - "9090:9090"
-  #
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   ports:
-  #     - "3000:3000"   # логин: admin/admin
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "29092:29092"
+    volumes:
+      - kafka-data:/var/lib/kafka
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
 
 volumes:
   postgres-data:
   redis-data:
-  # minio-data:
-  # prometheus-data:
-  # grafana-data:
+  minio-data:
+  kafka-data:
+  zookeeper-data:
