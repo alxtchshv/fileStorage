@@ -63,7 +63,7 @@ type Config struct {
 // В продакшне .env не используется — переменные задаются через Docker Compose / Kubernetes.
 func Load() *Config {
 	// godotenv.Load не завершает программу если файл не найден — это ОК для прод окружения.
-	if err := godotenv.Load("../../.env"); err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		log.Println("файл .env не найден, используем переменные окружения")
 	}
 
