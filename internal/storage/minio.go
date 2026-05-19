@@ -22,14 +22,16 @@ type MinioStorage struct {
 }
 
 // NewMinio создаёт MinIO клиент и проверяет/создаёт бакет.
-func NewMinio(cfg *config.Config) *MinioStorage {
+// Если MinIO недоступен — возвращает unavailableStorage, который возвращает ошибку на каждый вызов.
+// Это позволяет серверу стартовать без MinIO (auth и dirs работают, файлы — нет).
+func NewMinio(cfg *config.Config) FileStorage {
 	minioClient, err := minio.New(cfg.MinioEndpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.MinioAccessKey, cfg.MinioSecretKey, ""),
 		Secure: cfg.MinioUseSSL,
 	})
 	if err != nil {
-		slog.Error("не удалось создать MinIO клиент", "error", err)
-		return nil
+		slog.Warn("MinIO недоступен, загрузка файлов будет недоступна", "err", err)
+		return &unavailableStorage{reason: err.Error()}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -37,18 +39,39 @@ func NewMinio(cfg *config.Config) *MinioStorage {
 
 	exists, err := minioClient.BucketExists(ctx, cfg.MinioBucket)
 	if err != nil {
-		slog.Error("не удалось проверить существование бакета в MinIO", "bucket", cfg.MinioBucket, "error", err)
-		return nil
+		slog.Warn("MinIO недоступен, загрузка файлов будет недоступна", "err", err)
+		return &unavailableStorage{reason: err.Error()}
 	}
 
 	if !exists {
 		if err := minioClient.MakeBucket(ctx, cfg.MinioBucket, minio.MakeBucketOptions{}); err != nil {
-			slog.Error("не удалось создать бакет в MinIO", "bucket", cfg.MinioBucket, "error", err)
-			return nil
+			slog.Warn("не удалось создать бакет MinIO", "bucket", cfg.MinioBucket, "err", err)
+			return &unavailableStorage{reason: err.Error()}
 		}
 	}
 
+	slog.Info("MinIO подключён", "endpoint", cfg.MinioEndpoint, "bucket", cfg.MinioBucket)
 	return &MinioStorage{client: minioClient, bucket: cfg.MinioBucket}
+}
+
+// unavailableStorage возвращает ошибку на все операции когда MinIO недоступен.
+// Позволяет серверу работать без MinIO (auth, dirs доступны, файлы — нет).
+type unavailableStorage struct{ reason string }
+
+func (u *unavailableStorage) Upload(_ context.Context, _ string, _ io.Reader, _ int64, _ string) error {
+	return errors.New("хранилище файлов недоступно: " + u.reason)
+}
+func (u *unavailableStorage) Download(_ context.Context, _ string) (io.ReadCloser, error) {
+	return nil, errors.New("хранилище файлов недоступно: " + u.reason)
+}
+func (u *unavailableStorage) Delete(_ context.Context, _ string) error {
+	return errors.New("хранилище файлов недоступно: " + u.reason)
+}
+func (u *unavailableStorage) Exists(_ context.Context, _ string) (bool, error) {
+	return false, errors.New("хранилище файлов недоступно: " + u.reason)
+}
+func (u *unavailableStorage) GeneratePresignedURL(_ context.Context, _ string, _ time.Duration) (string, error) {
+	return "", errors.New("хранилище файлов недоступно: " + u.reason)
 }
 
 // Upload загружает файл в MinIO.
