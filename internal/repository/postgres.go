@@ -56,7 +56,7 @@ func RunMigrations(cfg *config.Config) {
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,
 	)
 
-	migration, err := migrate.New("file://../../migration", dbURL)
+	migration, err := migrate.New("file://migration", dbURL)
 	if err != nil {
 		panic(fmt.Errorf("проблемы с созданием миграции: %w", err))
 	}
