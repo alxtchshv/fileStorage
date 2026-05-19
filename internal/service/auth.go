@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"managerFiles/internal/model"
@@ -21,102 +20,87 @@ type authService struct {
 }
 
 func NewAuthService(users repository.UserRepo, tokenStore repository.TokenStore, jwtManager *jwt.Manager) AuthService {
-	return &authService{
-		users:      users,
-		tokenStore: tokenStore,
-		jwt:        jwtManager,
-	}
+	return &authService{users: users, tokenStore: tokenStore, jwt: jwtManager}
 }
 
-// Register создаёт аккаунт пользователя.
 func (s *authService) Register(ctx context.Context, input *model.RegisterInput) (*model.UserResponse, error) {
-
-	err := input.Validate()
-	if err != nil {
+	if err := input.Validate(); err != nil {
 		return nil, err
 	}
-
 	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
-
 	user := &model.User{
 		ID:           uuid.New().String(),
 		Username:     input.Username,
 		Email:        input.Email,
 		PasswordHash: string(hash),
 	}
-
 	if err := s.users.Create(ctx, user); err != nil {
 		return nil, err
 	}
-
 	return user.ToResponse(), nil
 }
 
-// Login проверяет credentials и выдаёт JWT пару.
 func (s *authService) Login(ctx context.Context, input *model.LoginInput) (*jwt.TokenPair, error) {
-
-	err := input.Validate()
-	if err != nil {
+	if err := input.Validate(); err != nil {
 		return nil, err
 	}
-
 	user, err := s.users.GetByEmail(ctx, input.Email)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
 			return nil, model.ErrInvalidCredentials
 		}
-
 		return nil, err
 	}
-
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
 		return nil, model.ErrInvalidCredentials
 	}
-
 	return s.jwt.GeneratePair(user.ID, user.Email)
 }
 
-// Refresh обменивает refresh токен на новую пару токенов.
 func (s *authService) Refresh(ctx context.Context, refreshToken string) (*jwt.TokenPair, error) {
-
-	userID, email, jti, err := s.jwt.ValidateRefresh(refreshToken)
+	userID, email, jti, exp, err := s.jwt.ValidateRefresh(refreshToken)
 	if err != nil {
 		return nil, err
 	}
 
 	blacklisted, err := s.tokenStore.IsBlacklisted(ctx, jti)
 	if err != nil {
-		return nil, fmt.Errorf("проверка blacklist: %w", err)
+		return nil, err
 	}
 	if blacklisted {
 		return nil, model.ErrTokenRevoked
 	}
 
-	_, err = s.users.GetByID(ctx, userID)
-	if err != nil {
-
+	if _, err = s.users.GetByID(ctx, userID); err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
 			return nil, model.ErrTokenInvalid
 		}
-
 		return nil, err
 	}
 
-	if err := s.tokenStore.Blacklist(ctx, jti, 8*24*time.Hour); err != nil {
-		return nil, fmt.Errorf("blacklist old refresh: %w", err)
+	// Инвалидировать старый refresh токен — каждый refresh одноразовый.
+	// TTL = оставшееся время жизни токена, чтобы blacklist не пух.
+	if err := s.tokenStore.Blacklist(ctx, jti, time.Until(exp)); err != nil {
+		return nil, err
 	}
 
 	return s.jwt.GeneratePair(userID, email)
 }
 
 // Logout инвалидирует access токен через Redis blacklist.
-func (s *authService) Logout(ctx context.Context, refreshToken string) error {
-	_, _, jti, err := s.jwt.ValidateRefresh(refreshToken)
+// TTL = оставшееся время жизни токена (не хардкод).
+func (s *authService) Logout(ctx context.Context, accessToken string) error {
+	_, _, jti, exp, err := s.jwt.ValidateAccess(accessToken)
 	if err != nil {
-		return err
+		// Если токен истёк или невалидный — пытаемся извлечь jti без проверки срока.
+		jti, err = s.jwt.ExtractJTI(accessToken)
+		if err != nil {
+			return nil // невалидный токен — считаем что уже вышли
+		}
+		return s.tokenStore.Blacklist(ctx, jti, 20*time.Minute)
 	}
-	return s.tokenStore.Blacklist(ctx, jti, 8*24*time.Hour)
+	return s.tokenStore.Blacklist(ctx, jti, time.Until(exp))
 }
