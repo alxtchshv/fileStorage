@@ -1,35 +1,12 @@
-version: "3.9"
-
 services:
-
   app:
     build:
       context: .
       dockerfile: docker/Dockerfile
     ports:
       - "8080:8080"
-    environment:
-      SERVER_PORT: "8080"
-      LOG_LEVEL: debug
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-1641golf}
-      DB_NAME: ${DB_NAME:-managerFiles}
-      DB_MAX_CONNS: "10"
-      REDIS_ADDR: redis:6379
-      REDIS_PASSWORD: ""
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
-      MINIO_BUCKET: files
-      KAFKA_BROKERS: kafka:9092
-      KAFKA_GROUP_ID: managerfiles-group
-      JWT_SECRET: ${JWT_SECRET:-secretFileStorage}
-      JWT_ACCESS_TTL: 15m
-      JWT_REFRESH_TTL: 168h
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2}
-      WORKER_COUNT: "5"
+    env_file:
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,7 +14,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-      kafka:                      
+      kafka:
         condition: service_healthy
     restart: unless-stopped
 
@@ -50,7 +27,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
       interval: 5s
@@ -62,7 +39,7 @@ services:
     volumes:
       - redis-data:/data
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -78,8 +55,8 @@ services:
     volumes:
       - minio-data:/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -105,7 +82,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     ports:
-      - "29092:29092"
+      - "127.0.0.1:29092:29092"
     volumes:
       - kafka-data:/var/lib/kafka
     healthcheck:
@@ -119,7 +96,7 @@ services:
     depends_on:
       - kafka
     ports:
-      - "8090:8080"
+      - "127.0.0.1:8090:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
